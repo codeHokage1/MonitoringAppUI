@@ -1,9 +1,8 @@
 ﻿@page "/monitoring"
+@using System.Text.Json
 @inject HttpClient Http
 @inject ILogger<Monitoring> Logger
 @inject NavigationManager NavigationManager
-
-<h2>Monitoring</h2>
 
 <h3>Monitor New Applications:</h3>
 
@@ -48,12 +47,13 @@ else
                     <th>App ID</th>
                     <th>App Name</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var app in apps)
                 {
-                    <tr @onclick="() => OpenAppDetails(app.Id)" class="clickable-row">
+                    <tr @onclick="() => OpenAppDetails(1234)" class="clickable-row">
                         <td>@app.Id</td>
                         <td>@app.AppName</td>
                         <td>
@@ -65,7 +65,10 @@ else
                     {
                     <span class="badge bg-danger">Inactive</span>
                     } *@
-                            <span class="badge bg-danger">Inactive</span>
+                            <span class="badge bg-success">Active</span>
+                        </td>
+                        <td>
+                            <NavLink class="btn btn-link" href="@($"/apps/{app.Id}")">View Details</NavLink>
                         </td>
                     </tr>
                 }
@@ -89,6 +92,7 @@ else
         try
         {
             Logger.LogInformation("Data to be sent ${data}", appData);
+            Console.WriteLine($"Data to be sent: {JsonSerializer.Serialize(appData)}");
             var response = await Http.PostAsJsonAsync("https://localhost:7142/api/monitoringappapi/apps", appData);
 
             if (response.IsSuccessStatusCode)
@@ -136,8 +140,10 @@ else
 
     }
 
-    private void OpenAppDetails(string appId)
+    private void OpenAppDetails(int appId)
     {
+        Console.WriteLine($"Clicked on AppId: {appId}");
+        Logger.LogInformation("Opening app details for app ID: {appId}", appId);
         // Navigate to the details page for the selected app
         NavigationManager.NavigateTo($"/apps/{appId}");
     }
