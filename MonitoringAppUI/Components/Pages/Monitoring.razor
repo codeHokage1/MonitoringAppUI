@@ -1,0 +1,82 @@
+﻿@page "/monitoring"
+@inject HttpClient Http
+@inject ILogger<Monitoring> Logger
+
+<h2>Monitoring</h2>
+
+<h3>Monitor New Applications:</h3>
+
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @SuccessMessage
+    </div>
+}
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+<EditForm Model="appData" OnValidSubmit="HandleValidSubmit" FormName="addApplication">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="appName" class="form-label">Application Name</label>
+        <InputText id="appName" class="form-control" @bind-Value="appData.AppName" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+@code {
+    // Model for form data
+    private AppData appData = new();
+
+    // Success and error messages
+    private string SuccessMessage;
+    private string ErrorMessage;
+
+    // Handle valid form submission
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Logger.LogInformation("Data to be sent ${data}", appData);
+            var response = await Http.PostAsJsonAsync("https://localhost:7142/api/monitoringappapi/apps", appData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                SuccessMessage = "Application submitted successfully!";
+                ErrorMessage = string.Empty;
+
+                // Clear form data after success
+                appData = new AppData();
+
+                // Clear the success message after 3 seconds
+                await Task.Delay(3000);
+                SuccessMessage = string.Empty;
+                StateHasChanged();  // Force re-render after delay
+            }
+            else
+            {
+                ErrorMessage = $"Error: {response.ReasonPhrase}";
+                SuccessMessage = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Exception: {ex.Message}";
+            SuccessMessage = string.Empty;
+        }
+    }
+
+    // Model class for form data
+    public class AppData
+    {
+        public string AppName { get; set; }
+    }
+}
+
