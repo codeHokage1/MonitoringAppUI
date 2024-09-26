@@ -1,0 +1,67 @@
+﻿@page "/dashboard"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3 class="text-center mt-4">Monitored Apps Dashboard</h3>
+
+@if (apps == null)
+{
+    <p class="text-center"><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-responsive mt-4">
+        <table class="table table-hover table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>App ID</th>
+                    <th>App Name</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var app in apps)
+                {
+                    <tr @onclick="() => OpenAppDetails(app.AppId)" class="clickable-row">
+                        <td>@app.AppId</td>
+                        <td>@app.AppName</td>
+                        <td>
+                            @* @if (app.Status == "Active")
+                    {
+                    <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                    <span class="badge bg-danger">Inactive</span>
+                    } *@
+                            <span class="badge bg-danger">Inactive</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<AppModel> apps;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch apps from the API endpoint
+        apps = await Http.GetFromJsonAsync<List<AppModel>>("https://localhost:7142/api/monitoringappapi/apps");
+    }
+
+    private void OpenAppDetails(int appId)
+    {
+        // Navigate to the details page for the selected app
+        NavigationManager.NavigateTo($"/apps/{appId}");
+    }
+
+    public class AppModel
+    {
+        public int AppId { get; set; }
+        public string AppName { get; set; }
+        // public string Status { get; set; }
+    }
+}

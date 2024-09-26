@@ -1,6 +1,7 @@
 ﻿@page "/monitoring"
 @inject HttpClient Http
 @inject ILogger<Monitoring> Logger
+@inject NavigationManager NavigationManager
 
 <h2>Monitoring</h2>
 
@@ -30,6 +31,49 @@
 
     <button type="submit" class="btn btn-primary">Submit</button>
 </EditForm>
+
+
+<h3 class="text-center mt-4">Monitored Apps Dashboard</h3>
+
+@if (apps == null)
+{
+    <p class="text-center"><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-responsive mt-4">
+        <table class="table table-hover table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>App ID</th>
+                    <th>App Name</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var app in apps)
+                {
+                    <tr @onclick="() => OpenAppDetails(app.Id)" class="clickable-row">
+                        <td>@app.Id</td>
+                        <td>@app.AppName</td>
+                        <td>
+                            @* @if (app.Status == "Active")
+                    {
+                    <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                    <span class="badge bg-danger">Inactive</span>
+                    } *@
+                            <span class="badge bg-danger">Inactive</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
 
 @code {
     // Model for form data
@@ -77,6 +121,32 @@
     public class AppData
     {
         public string AppName { get; set; }
+    }
+
+
+
+    // For Dashboard <summary>
+    private List<AppModel> apps;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch apps from the API endpoint
+        apps = await Http.GetFromJsonAsync<List<AppModel>>("https://localhost:7142/api/monitoringappapi/apps");
+        Logger.LogInformation("Apps data: {apps}", apps);
+
+    }
+
+    private void OpenAppDetails(string appId)
+    {
+        // Navigate to the details page for the selected app
+        NavigationManager.NavigateTo($"/apps/{appId}");
+    }
+
+    public class AppModel
+    {
+        public string Id { get; set; }
+        public string AppName { get; set; }
+        // public string Status { get; set; }
     }
 }
 
