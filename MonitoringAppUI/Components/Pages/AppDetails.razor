@@ -61,6 +61,7 @@ else
         try
         {
             telemetryData = await Http.GetFromJsonAsync<List<TelemetryModel>>($"https://localhost:7142/api/monitoringappapi/apps/{appId}");
+            Console.WriteLine($"Telemetry data: {JsonSerializer.Serialize(telemetryData)}");
         }
         catch (JsonException ex)
         {
@@ -75,12 +76,13 @@ else
         // Sort telemetry data into logs, metrics, and traces
         foreach (var item in telemetryData)
         {
+            // Console.WriteLine($"Telemetry item: {JsonSerializer.Serialize(item)}");
             switch (item.Type)
             {
-                case "log":
+                case "logs":
                     logs.Add(item);
                     break;
-                case "metric":
+                case "metrics":
                     metrics.Add(item);
                     break;
                 case "trace":
@@ -88,6 +90,10 @@ else
                     break;
             }
         }
+
+        Console.WriteLine($"Logs: {JsonSerializer.Serialize(logs)}");
+        Console.WriteLine($"Metrics: {JsonSerializer.Serialize(metrics)}");
+        Console.WriteLine($"Traces: {JsonSerializer.Serialize(traces)}");
     }
 
     public class TelemetryModel
